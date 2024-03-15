@@ -252,6 +252,19 @@ streams:
       primary_key: "id"
       path: "/v3/asm/groups"
       field_path: []
+  - $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "stats"
+      primary_key: "email"
+      cursor_field: "created"
+      path: "/v3/stats"
+      field_path: []
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      paginator:
+        $ref: "#/definitions/offset_paginator"
 check:
   type: CheckStream
   stream_names: ["lists"]

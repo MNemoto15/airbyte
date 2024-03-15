@@ -20,6 +20,7 @@ from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handl
 from numpy import nan
 from pendulum import DateTime
 from requests import codes, exceptions
+from datetime import datetime, timezone
 
 
 class SendgridStream(HttpStream, ABC):
@@ -125,7 +126,6 @@ class SendgridStreamIncrementalMixin(HttpStream, ABC):
         params.update({"start_time": start_time, "end_time": pendulum.now().int_timestamp})
         return params
 
-
 class SendgridStreamMetadataPagination(SendgridStream):
     def request_params(
         self,
@@ -194,6 +194,9 @@ class Contacts(SendgridStream):
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _send_http_request(self, method: str, url: str, stream: bool = False, enable_auth: bool = True):
+        # 追加コード: リクエスト送信前に1秒待機
+        time.sleep(1)
+
         headers = self.authenticator.get_auth_header() if enable_auth else None
         response = self._session.request(method, url=url, headers=headers, stream=stream)
         if response.status_code not in [200, 202]:
@@ -426,3 +429,21 @@ class SpamReports(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin
 class UnsubscribeGroups(SendgridStream):
     def path(self, **kwargs) -> str:
         return "asm/groups"
+
+class Stats(SendgridStream, SendgridStreamIncrementalMixin):
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state)
+
+        if isinstance(self._start_time, int):
+            start_time_formatted = datetime.fromtimestamp(self._start_time, tz=timezone.utc).strftime('%Y-%m-%d')
+        elif isinstance(self._start_time, str):
+            start_time_formatted = self._start_time
+        else:
+            raise ValueError("Unsupported _start_time format")
+
+        end_time_formatted = pendulum.now().strftime('%Y-%m-%d')
+        params.update({"start_date": start_time_formatted, "end_date": end_time_formatted})
+        return params
+
+    def path(self, **kwargs) -> str:
+        return "stats"

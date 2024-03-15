@@ -28,6 +28,7 @@ from .streams import (
     SuppressionGroups,
     Templates,
     UnsubscribeGroups,
+    Stats,
 )
 
 
@@ -66,6 +67,7 @@ class SourceSendgrid(AbstractSource):
             InvalidEmails(authenticator=authenticator, start_time=start_time),
             SpamReports(authenticator=authenticator, start_time=start_time),
             UnsubscribeGroups(authenticator=authenticator),
+            Stats(authenticator=authenticator, start_time=start_time),
         ]
 
         return streams
