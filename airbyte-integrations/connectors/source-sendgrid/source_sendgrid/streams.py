@@ -431,6 +431,9 @@ class UnsubscribeGroups(SendgridStream):
         return "asm/groups"
 
 class Stats(SendgridStream, SendgridStreamIncrementalMixin):
+    primary_key = "date"
+    cursor_field = "date"
+
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state)
 

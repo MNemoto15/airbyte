@@ -255,8 +255,8 @@ streams:
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "stats"
-      primary_key: "email"
-      cursor_field: "created"
+      primary_key: "date"
+      cursor_field: "date"
       path: "/v3/stats"
       field_path: []
     incremental_sync:
